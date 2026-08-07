@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -115,14 +116,14 @@
         document.onkeydown = function (e) {
 
             let renderizarNovamente = false;
-            if (e.key === 'ArrowLeft') {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.hey === 'A') {
 
                 mapa[naveY][3] = ' ';
                 naveY = +!naveY;
                 mapa[naveY][3] = '>';
                 renderizarNovamente = true;
 
-            } else if (e.key === 'ArrowRight') {
+            } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
 
                 if (pos_tiro[0] === 0) {
                     pos_tiro[0] = naveX +1;
@@ -131,14 +132,14 @@
                 }
                 renderizarNovamente = true;
 
-            } else if (e.key === 'ArrowUp') {
+            } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
 
                 mapa[naveY][3] = ' ';
                 naveY = 0;
                 mapa[naveY][3] = '>';
                 renderizarNovamente = true;
 
-            } else if (e.key === 'ArrowDown') {
+            } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
 
                 mapa[naveY][3] = ' ';
                 naveY = 1;
@@ -154,15 +155,17 @@
 
         let ticks = 0;
         let tickNormal = false;
+        let intervaloLoop = 200;
         function loop() {
 
-            pontos += 0.2;
             ++ticks;
             tickNormal = !tickNormal;
 
             render();
 
             if (vidas > 0) {
+
+                IDtimeout = setTimeout(loop, ~~intervaloLoop);
 
                 //obstáculo com dobro de ticks
                 if (obstaculo_especial[0] > 0) {
@@ -179,6 +182,7 @@
                         mapa[pos_tiro[1]][pos_tiro[0]] = ' ';
                         pos_tiro[0] = pos_tiro[1] = 0;
                         o[0] = o[1] = 0;
+                        ++pontos;
                     } else if (o[0] <= 3) {
                         --vidas;
                         o[0] = o[1] = 0;
@@ -191,9 +195,9 @@
                 } else {
 
                     // gerar obstáculo especial
-                    // chance aumenta 5% a cada 10 ticks
-                    const chance = Math.max(20 - Math.floor(ticks * 0.1), 1);
-                    if (Math.floor(Math.random() * chance) < 1) {
+                    // chance aumenta 5% a cada 10 ticks (2 segundos)
+                    const chance = Math.min(Math.floor(ticks / 10), 20);
+                    if (Math.floor(Math.random() * 20) < chance) {
                         obstaculo_especial[0] = 15;
                         obstaculo_especial[1] = Math.floor(Math.random() * 2);
                         mapa[obstaculo_especial[1]][obstaculo_especial[0]] = '@';
@@ -203,6 +207,8 @@
 
                 // ticks normais
                 if (tickNormal) {
+
+                    intervaloLoop = Math.max(intervaloLoop - 0.8, 50);
 
                     for (let i=0; i<2; ++i){
                         const o = obstaculos[i];
@@ -231,6 +237,7 @@
                                 o[1] = Math.floor(Math.random() * 2);
                                 if (mapa[o[1]][o[0]] !== '@') mapa[o[1]][o[0]] = '#';
                                 pos_tiro[0] = pos_tiro[1] = 0;
+                                ++pontos;
                             }
                         }
                         if (pos_tiro[0] === 15) {
@@ -247,7 +254,7 @@
 
             } else {
 
-                clearInterval(IDintervalo);
+                clearInterval(IDtimeout);
                 exibicaoVidas.innerText = "Fim";
                 if (pontos) document.getElementById("form").style.display = "";
                 else document.getElementById("form").remove();
@@ -255,7 +262,7 @@
             }
         }
 
-        const IDintervalo = setInterval(loop, 200);
+        let IDtimeout = setTimeout(loop, intervaloLoop);
 
     </script>
 
@@ -315,12 +322,12 @@
 
         async function registrarPontuacao() {
 
-            if (location.hostname !== 'sitesito.web.app' && location.hostname !== 'davipolheim.github.io') {
+            if (location.hostname !== 'sitesito.web.app') {
                 botaoRegistrarPontuacao.innerText = 'num vai da';
                 return;
             }
             const nome = inputNome.value.replaceAll(' ','_').replace(/[^A-Za-z0-9_]/g,'');
-            if (lerVidas() < 0 && nome) {
+            if (lerVidas() <= 0 && nome) {
                 document.getElementById("form").remove();
 
                 let pontuacaoAntiga;
