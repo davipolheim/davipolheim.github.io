@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+	<meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sitesito/joj</title>
+    <style>
+        @font-face {
+            font-family: 'CourierPrime';
+            src: url(CourierPrime-Regular.ttf);
+        }
+        @font-face {
+            font-family: 'CascadiaMono';
+            src: url(../assets/cascadia_mono.woff2);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            padding: 16px;
+        }
+        .centralizar {
+            font-family: 'CascadiaMono', 'CourierPrime';
+            font-size: 24px;
+            width: fit-content;
+            margin: auto;
+            margin-bottom: 16px;
+        }
+        #div-mapa {
+            border: 1px solid black;
+            padding: 8px;
+        }
+        #exibicao-mapa {
+            white-space-collapse: preserve;
+        }
+        #form, #painel-pontuacao {
+            outline: 1px solid black;
+            width: fit-content;
+            padding: 16px;
+        }
+        #painel-pontuacao {
+            white-space-collapse: preserve;
+        }
+        #form button, input {
+            font-family: 'CascadiaMono', 'CourierPrime';
+            padding: 4px;
+            background-color: white;
+            outline: none;
+        }
+        #form button {
+            cursor: pointer;
+        }
+        #form input {
+            width: 178px;
+        }
+    </style>
+</head>
+<body>
+    <div id="div-mapa" class="centralizar">
+        <p id="exibicao-mapa">ola</p>
+    </div>
+    <div id="interface" class="centralizar">
+        <p id="exibicao-vidas">Vidas: 7</p>
+        <p id="exibicao-pontos">Pontos: 0</p>
+    </div>
+    <div id="form" class="centralizar" style="display: none;">
+        <label>Nome: <input id="input-nome" type="text" maxlength="24"></label>
+        <button id="registrar-pontuacao">Registrar pontuação</button>
+    </div>
+    <div id="painel-pontuacao" class="centralizar">Tabela de pontuação             <br></div>
+
+    <script>
+        let lerVidas, lerPontos;
+    </script>
+    <script type="module">
+
+        let vidas = 5;
+        lerVidas = () => vidas;
+        let pontos = 0;
+        lerPontos = () => pontos;
+
+        let naveY = 0;
+        let naveX = 3;
+        const obstaculos = [[15,0], [13,1]];
+        const obstaculo_especial = [0,0];
+        const pos_tiro = [0,0];
+
+        const mapa = [];
+        for (let y=0; y<2; ++y) {
+            mapa.push([]);
+            for (let x=0; x<16; ++x) {
+                mapa[y].push(" ");
+            }
+        }
+
+        const exibicaoMapa = document.getElementById("exibicao-mapa");
+        const exibicaoVidas = document.getElementById("exibicao-vidas");
+        const exibicaoPontos = document.getElementById("exibicao-pontos");
+
+        function render() {
+
+            let text = "";
+            for (let y=0; y < mapa.length; ++y) {
+                text += mapa[y].join("") + '\n';
+            }
+            exibicaoMapa.innerText = text;
+
+            if (vidas) exibicaoVidas.innerText = 'Vidas: ' + vidas;
+            exibicaoPontos.innerText = 'Pontos: ' + Math.floor(pontos);
+
+        }
+
+        document.onkeydown = function (e) {
+
+            let renderizarNovamente = false;
+            if (e.key === 'ArrowLeft') {
+
+                mapa[naveY][3] = ' ';
+                naveY = +!naveY;
+                mapa[naveY][3] = '>';
+                renderizarNovamente = true;
+
+            } else if (e.key === 'ArrowRight') {
+
+                if (pos_tiro[0] === 0) {
+                    pos_tiro[0] = naveX +1;
+                    pos_tiro[1] = naveY;
+                    mapa[pos_tiro[1]][pos_tiro[0]] = '-';
+                }
+                renderizarNovamente = true;
+
+            } else if (e.key === 'ArrowUp') {
+
+                mapa[naveY][3] = ' ';
+                naveY = 0;
+                mapa[naveY][3] = '>';
+                renderizarNovamente = true;
+
+            } else if (e.key === 'ArrowDown') {
+
+                mapa[naveY][3] = ' ';
+                naveY = 1;
+                mapa[naveY][3] = '>';
+                renderizarNovamente = true;
+
+            }
+
+            if (renderizarNovamente) 
+                render();
+
+        };
+
+        let ticks = 0;
+        let tickNormal = false;
+        function loop() {
+
+            pontos += 0.2;
+            ++ticks;
+            tickNormal = !tickNormal;
+
+            render();
+
+            if (vidas > 0) {
+
+                //obstáculo com dobro de ticks
+                if (obstaculo_especial[0] > 0) {
+
+                    const o = obstaculo_especial;
+                    mapa[o[1]][o[0]] = ' ';
+                    --o[0];
+
+                    if (
+                        o[0] > naveX &&
+                        pos_tiro[1] === o[1] &&
+                        pos_tiro[0]+1 > o[0]
+                    ) {
+                        mapa[pos_tiro[1]][pos_tiro[0]] = ' ';
+                        pos_tiro[0] = pos_tiro[1] = 0;
+                        o[0] = o[1] = 0;
+                    } else if (o[0] <= 3) {
+                        --vidas;
+                        o[0] = o[1] = 0;
+                    }
+
+                    if (o[0] > 0) {
+                        mapa[o[1]][o[0]] = '@';
+                    }
+
+                } else {
+
+                    // gerar obstáculo especial
+                    // chance aumenta 5% a cada 10 ticks
+                    const chance = Math.max(20 - Math.floor(ticks * 0.1), 1);
+                    if (Math.floor(Math.random() * chance) < 1) {
+                        obstaculo_especial[0] = 15;
+                        obstaculo_especial[1] = Math.floor(Math.random() * 2);
+                        mapa[obstaculo_especial[1]][obstaculo_especial[0]] = '@';
+                    }
+
+                }
+
+                // ticks normais
+                if (tickNormal) {
+
+                    for (let i=0; i<2; ++i){
+                        const o = obstaculos[i];
+                        if (mapa[o[1]][o[0]] !== '@') mapa[o[1]][o[0]] = ' ';
+                        --o[0];
+                        if (o[0] <= naveX){
+                            --vidas;
+                            o[0] = 15;
+                            o[1] = Math.floor(Math.random() * 2);
+                        }
+                        if (mapa[o[1]][o[0]] !== '@') mapa[o[1]][o[0]] = '#';
+                    }
+
+                    if (pos_tiro[0] > 0) {
+                        mapa[pos_tiro[1]][pos_tiro[0]] = ' ';
+                        ++pos_tiro[0];
+
+                        for (let i=0; i<2; ++i){
+                            const o = obstaculos[i];
+                            if (
+                                pos_tiro[1] === o[1] && 
+                                pos_tiro[0]+1 > o[0]
+                            ){
+                                if (mapa[o[1]][o[0]] !== '@') mapa[o[1]][o[0]] = ' ';
+                                o[0] = 15;
+                                o[1] = Math.floor(Math.random() * 2);
+                                if (mapa[o[1]][o[0]] !== '@') mapa[o[1]][o[0]] = '#';
+                                pos_tiro[0] = pos_tiro[1] = 0;
+                            }
+                        }
+                        if (pos_tiro[0] === 15) {
+                            pos_tiro[0] = pos_tiro[1] = 0;
+                        }
+
+                        if (pos_tiro[0] > 0) {
+                            mapa[pos_tiro[1]][pos_tiro[0]] = '-';
+                        }
+                    }
+                }
+
+                mapa[naveY][3] = '>';
+
+            } else {
+
+                clearInterval(IDintervalo);
+                exibicaoVidas.innerText = "Fim";
+                if (pontos) document.getElementById("form").style.display = "";
+                else document.getElementById("form").remove();
+
+            }
+        }
+
+        const IDintervalo = setInterval(loop, 200);
+
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+        import {
+            getFirestore,
+            collection,
+            doc,
+            setDoc,
+            getDocs,
+            query,
+            orderBy,
+            limit,
+        } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBcaPyH3dM_Coba2FG-qDceKeKNtSCk6pg",
+            authDomain: "sitesito.firebaseapp.com",
+            projectId: "sitesito",
+            storageBucket: "sitesito.firebasestorage.app",
+            messagingSenderId: "86542823836",
+            appId: "1:86542823836:web:ebdd482005ce7fc020d859"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const nomeColecao = 'joguitos/tabelas/jogo02';
+
+        const divPainelPontuacao = document.getElementById("painel-pontuacao");
+        const botaoRegistrarPontuacao = document.getElementById("registrar-pontuacao");
+        const inputNome = document.getElementById("input-nome");
+
+        let queryTabela;
+        async function atualizarPainel() {
+
+            const documentoTemporario = document.createDocumentFragment();
+            queryTabela = await getDocs(query(
+                collection(db, nomeColecao), 
+                orderBy('pontos', 'desc'), 
+                limit(50)
+            ));
+
+            queryTabela.forEach((doc) => {
+                const pontos = " " + doc.data().pontos;
+                const nome = doc.id.padEnd(32 - pontos.length, ".") + pontos;
+
+                const nodeNome = document.createTextNode(nome);
+                documentoTemporario.appendChild(nodeNome);
+                documentoTemporario.appendChild(document.createElement("br"));
+            });
+            divPainelPontuacao.innerHTML = 'Tabela de pontuação             <br>';
+            divPainelPontuacao.appendChild(documentoTemporario);
+
+        };
+        atualizarPainel();
+
+        async function registrarPontuacao() {
+
+            if (location.hostname !== 'sitesito.web.app') {
+                botaoRegistrarPontuacao.innerText = 'num vai da';
+                return;
+            }
+            const nome = inputNome.value.replaceAll(' ','_').replace(/[^A-Za-z0-9_]/g,'');
+            if (lerVidas() < 0 && nome) {
+                document.getElementById("form").remove();
+
+                let pontuacaoAntiga;
+                queryTabela.forEach((doc) => {
+                    if (doc.id === nome) pontuacaoAntiga = doc.data().pontos;
+                });
+                if (lerPontos() && (!pontuacaoAntiga || pontuacaoAntiga < lerPontos())) {
+                    await setDoc(doc(db, nomeColecao, nome), {
+                        pontos: Math.floor(lerPontos()),
+                    });
+                }
+                atualizarPainel();
+            }
+
+        };
+        botaoRegistrarPontuacao.onclick = registrarPontuacao;
+        inputNome.onkeydown = function(e) { if (e.key === 'Enter') registrarPontuacao(); };
+
+    </script>
+</body>
+</html>
