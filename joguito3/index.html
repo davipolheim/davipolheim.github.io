@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
 	<meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sitesito/joj</title>
+    <title>Jogo 3</title>
     <style>
         @font-face {
             font-family: 'CourierPrime';
@@ -113,6 +113,46 @@
             exibicaoPontos.innerText = "Pontos: " + pontos;
         }
 
+        const obstaculos = [];
+        function gerarObstaculo() {
+            const obstaculo = [0,0];
+            let posicaoValida = false;
+            repetir: for (let i = 3; i; --i) {
+                obstaculo[0] = aleatorio(tamanhoMapa);
+                obstaculo[1] = aleatorio(tamanhoMapa);
+                if (
+                    Math.abs(obstaculo[0] - player[0]) <= 1 && 
+                    Math.abs(obstaculo[1] - player[1]) <= 1
+                ) continue repetir;
+                if (
+                    Math.abs(obstaculo[0] - ponto[0]) <= 1 && 
+                    Math.abs(obstaculo[1] - ponto[1]) <= 1
+                ) continue repetir;
+                for (let i = 0; i < rastro.length; ++i) {
+                    if (colisao(obstaculo, rastro)) {
+                        continue repetir;
+                    }
+                }
+                posicaoValida = true;
+                break repetir;
+            }
+            if (posicaoValida) {
+                mapa[obstaculo[1]][obstaculo[0]] = '!';
+                obstaculos.push({ pos: obstaculo, tempo: aleatorio(3) + 1 });
+            }
+        }
+        function limparObstaculos() {
+            for (let i = 0; i < obstaculos.length; ++i) {
+                const obstaculo = obstaculos[i];
+                const tempo = --obstaculo.tempo;
+                if (!tempo) {
+                    mapa[obstaculo.pos[1]][obstaculo.pos[0]] = ' ';
+                    obstaculos.splice(i, 1);
+                    --i;
+                }
+            }
+        }
+
         const filaDirecoes = [];
         let direcao = 3;
         let intervaloFrames = 500;
@@ -147,8 +187,18 @@
                 fimDeJogo();
             } else {
                 for (let i = 0; i < rastro.length; ++i) {
-                    if (colisao(player, rastro[i]))
+                    if (colisao(player, rastro[i])) {
                         fimDeJogo();
+                        break;
+                    }
+                }
+            }
+            if (!morreu) {
+                for (let i = 0; i < obstaculos.length; ++i) {
+                    if (colisao(player, obstaculos[i].pos)) {
+                        fimDeJogo();
+                        break;
+                    }
                 }
             }
 
@@ -156,6 +206,7 @@
                 aumentarRastro = true;
                 adicionarPontos(1);
                 if (intervaloFrames > 100) intervaloFrames = 500 - pontos * 10;
+
                 repetir: while (true) {
                     ponto[0] = aleatorio(tamanhoMapa);
                     ponto[1] = aleatorio(tamanhoMapa);
@@ -165,7 +216,12 @@
                         if (colisao(ponto, rastro[i]))
                             continue repetir;
                     }
-                    break;
+                    break repetir;
+                }
+
+                limparObstaculos();
+                for (let i = aleatorio(2) +1; i; --i) {
+                    gerarObstaculo();
                 }
             }
             mapa[ponto[1]][ponto[0]] = "•";
