@@ -84,6 +84,7 @@
         const rastro = [[player[0], player[1]-1]];
 
         const colisao = (pos1, pos2) => pos1[0] === pos2[0] && pos1[1] === pos2[1];
+        const distancia = (pos1, pos2, dist) => Math.abs(pos1[0] - pos2[0]) <= dist && Math.abs(pos1[1] - pos2[1]) <= dist;
 
         let pontos = 0;
         lerPontos = () => pontos;
@@ -120,14 +121,8 @@
             repetir: for (let i = 3; i; --i) {
                 obstaculo[0] = aleatorio(tamanhoMapa);
                 obstaculo[1] = aleatorio(tamanhoMapa);
-                if (
-                    Math.abs(obstaculo[0] - player[0]) <= 1 && 
-                    Math.abs(obstaculo[1] - player[1]) <= 1
-                ) continue repetir;
-                if (
-                    Math.abs(obstaculo[0] - ponto[0]) <= 1 && 
-                    Math.abs(obstaculo[1] - ponto[1]) <= 1
-                ) continue repetir;
+                if (distancia(obstaculo, player, 1)) continue repetir;
+                if (distancia(obstaculo, ponto, 1)) continue repetir;
                 for (let i = 0; i < rastro.length; ++i) {
                     if (colisao(obstaculo, rastro)) {
                         continue repetir;
@@ -210,8 +205,12 @@
                 repetir: while (true) {
                     ponto[0] = aleatorio(tamanhoMapa);
                     ponto[1] = aleatorio(tamanhoMapa);
-                    if (colisao(player, ponto))
+                    if (distancia(ponto, player, 1))
                         continue repetir;
+                    for (let i = 0; i < obstaculos.length; ++i) {
+                        if (distancia(ponto, obstaculos[i].pos, 1))
+                            continue repetir;
+                    }
                     for (let i = 0; i < rastro.length; ++i) {
                         if (colisao(ponto, rastro[i]))
                             continue repetir;
