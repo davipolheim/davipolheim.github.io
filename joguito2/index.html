@@ -121,7 +121,7 @@
             let renderizarNovamente = false;
             if (event.code === 'ArrowUp' || event.code === 'KeyW') {
 
-                event.preventDefault();
+                if (event.target.nodeName !== "INPUT") event.preventDefault();
                 mapa[naveY][3] = ' ';
                 naveY = 0;
                 mapa[naveY][3] = '>';
@@ -129,7 +129,7 @@
 
             } else if (event.code === 'ArrowDown' || event.code === 'KeyS') {
 
-                event.preventDefault();
+                if (event.target.nodeName !== "INPUT") event.preventDefault();
                 mapa[naveY][3] = ' ';
                 naveY = 1;
                 mapa[naveY][3] = '>';
@@ -137,7 +137,7 @@
 
             } else if (event.code === 'ArrowLeft' || event.code === 'KeyA') {
 
-                event.preventDefault();
+                if (event.target.nodeName !== "INPUT") event.preventDefault();
                 mapa[naveY][3] = ' ';
                 naveY = +!naveY;
                 mapa[naveY][3] = '>';
@@ -145,7 +145,7 @@
 
             } else if (event.code === 'ArrowRight' || event.code === 'KeyD') {
 
-                event.preventDefault();
+                if (event.target.nodeName !== "INPUT") event.preventDefault();
                 if (pos_tiro[0] === 0) {
                     pos_tiro[0] = naveX +1;
                     pos_tiro[1] = naveY;
