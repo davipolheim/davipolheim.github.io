@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -113,37 +112,45 @@
 
         }
 
-        document.onkeydown = function (e) {
+        document.onkeydown = function (event) {
+            if (event.code === 'KeyR') {
+                location.reload();
+                return;
+            }
 
             let renderizarNovamente = false;
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.hey === 'A') {
+            if (event.code === 'ArrowUp' || event.code === 'KeyW') {
 
-                mapa[naveY][3] = ' ';
-                naveY = +!naveY;
-                mapa[naveY][3] = '>';
-                renderizarNovamente = true;
-
-            } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-
-                if (pos_tiro[0] === 0) {
-                    pos_tiro[0] = naveX +1;
-                    pos_tiro[1] = naveY;
-                    mapa[pos_tiro[1]][pos_tiro[0]] = '-';
-                }
-                renderizarNovamente = true;
-
-            } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-
+                event.preventDefault();
                 mapa[naveY][3] = ' ';
                 naveY = 0;
                 mapa[naveY][3] = '>';
                 renderizarNovamente = true;
 
-            } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+            } else if (event.code === 'ArrowDown' || event.code === 'KeyS') {
 
+                event.preventDefault();
                 mapa[naveY][3] = ' ';
                 naveY = 1;
                 mapa[naveY][3] = '>';
+                renderizarNovamente = true;
+
+            } else if (event.code === 'ArrowLeft' || event.code === 'KeyA') {
+
+                event.preventDefault();
+                mapa[naveY][3] = ' ';
+                naveY = +!naveY;
+                mapa[naveY][3] = '>';
+                renderizarNovamente = true;
+
+            } else if (event.code === 'ArrowRight' || event.code === 'KeyD') {
+
+                event.preventDefault();
+                if (pos_tiro[0] === 0) {
+                    pos_tiro[0] = naveX +1;
+                    pos_tiro[1] = naveY;
+                    mapa[pos_tiro[1]][pos_tiro[0]] = '-';
+                }
                 renderizarNovamente = true;
 
             }
