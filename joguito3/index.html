@@ -139,8 +139,8 @@
         function limparObstaculos() {
             for (let i = 0; i < obstaculos.length; ++i) {
                 const obstaculo = obstaculos[i];
-                const tempo = --obstaculo.tempo;
-                if (!tempo) {
+                const tempoDeVida = --obstaculo.tempo;
+                if (!tempoDeVida) {
                     mapa[obstaculo.pos[1]][obstaculo.pos[0]] = ' ';
                     obstaculos.splice(i, 1);
                     --i;
@@ -180,24 +180,12 @@
                 player[0] >= tamanhoMapa || player[1] >= tamanhoMapa
             ) {
                 fimDeJogo();
-            } else {
-                for (let i = 0; i < rastro.length; ++i) {
-                    if (colisao(player, rastro[i])) {
-                        fimDeJogo();
-                        break;
-                    }
-                }
-            }
-            if (!morreu) {
-                for (let i = 0; i < obstaculos.length; ++i) {
-                    if (colisao(player, obstaculos[i].pos)) {
-                        fimDeJogo();
-                        break;
-                    }
-                }
-            }
-
-            if (!morreu && colisao(player, ponto)) {
+            } else if (
+                mapa[player[1]][player[0]] === '#' || 
+                mapa[player[1]][player[0]] === '!'
+            ) {
+                fimDeJogo();
+            } else if (colisao(player, ponto)) {
                 aumentarRastro = true;
                 adicionarPontos(1);
                 if (intervaloFrames > 100) intervaloFrames = 500 - pontos * 10;
