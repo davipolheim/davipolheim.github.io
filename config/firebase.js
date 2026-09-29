@@ -1,5 +1,5 @@
-import { initializeApp } from "./firebase-app.js";
-import { getFirestore } from "./firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBcaPyH3dM_Coba2FG-qDceKeKNtSCk6pg",
@@ -19,11 +19,13 @@ export const db = getFirestore(app);
 // const banco = {
 
 //     async addDoc(collection, data) {
-//         return await Firestore.addDoc(Firestore.collection(collection), data);
+//         return await Firestore.addDoc(Firestore.collection(db, collection), data);
 //     },
 //     async getDoc(collection, doc) {
-//         return await Firestore.getDoc(Firestore.doc(Firestore.collection(collection), doc));
+//         return await Firestore.getDoc(Firestore.doc(Firestore.collection(db, collection), doc));
 //     },
-//     async setDoc(collection, doc, data) {},
+//     async setDoc(collection, doc, data) {
+//         return await Firestore.setDoc(Firestore.doc(Firestore.collection(db, collection), doc), data);
+//     },
 
 // };
